@@ -47,8 +47,8 @@ const CommunityApplicationSchema = new mongoose.Schema({
         enum: [
             'I. Can\'t. Stop. Coding.',
             'I meet most of my coding goals',
-            'I have been struggling to meet my coding goals',
-            'I am not progressing as expected'  
+            'I have been struggling to meet some of my coding goals',
+            'I am not progressing as expected'
         ]
     },
 
@@ -58,7 +58,7 @@ const CommunityApplicationSchema = new mongoose.Schema({
         required: true,
         enum: [
             'Just getting started',
-            'I have the basics but have not completed any projects',
+            'I know the basics but have not completed any projects',
             'I have built some projects but want to build something more extensive',
             'I have built many projects but want to gain more experience',
             'I am a professional developer looking for new challenges',

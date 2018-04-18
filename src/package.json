@@ -1,7 +1,7 @@
 {
-  "name": "react-router-practice",
+  "name": "chingu-community-application",
   "version": "0.0.0",
-  "description": "react router practice for tyler mcginnis react stream",
+  "description": "chingu community application form",
   "scripts": {
     "create": "webpack",
     "start": "webpack-dev-server --open"
@@ -12,11 +12,15 @@
     "presets": [
       "env",
       "react"
+    ],
+    "plugins": [
+      "babel-plugin-transform-object-rest-spread"
     ]
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.4",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
     "css-loader": "^0.28.11",
@@ -29,7 +33,6 @@
   "dependencies": {
     "axios": "^0.18.0",
     "react": "^16.3.1",
-    "react-dom": "^16.3.1",
-    "react-router-dom": "^4.2.2"
+    "react-dom": "^16.3.1"
   }
 }

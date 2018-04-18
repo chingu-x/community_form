@@ -9,7 +9,7 @@ module.exports = {
 
     // output directory and filename
     output: {
-        path: path.resolve('..', 'public/dist'),
+        path: path.resolve('..', 'public', 'dist'),
         filename: 'index_bundle.js'
     },
 
@@ -20,17 +20,16 @@ module.exports = {
             // babel-loader transformations defined in package.json["babel"]
             { test: /\.(js)$/, use: 'babel-loader' },
             { test: /\.(css)$/, use: ['style-loader', 'css-loader'] }
-        ]   
+        ]
     },
 
     plugins: [
         new HTMLWebpackPlugin({
             // target dev index.html to be cloned
             template: 'app/index.html'
-        }),
+        })
     ],
 
     // how to not get bundled code using webpack-dev-server (better error messages)?
-    mode: 'development'
-
+    mode: 'development'   
 }

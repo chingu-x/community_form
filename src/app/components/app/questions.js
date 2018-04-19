@@ -1,4 +1,4 @@
-const { countryEnum } = require('../../db/enums');
+import { countryEnum } from '../../../../db/enums';
 
 const questions = [
     {

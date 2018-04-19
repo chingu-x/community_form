@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import * as ReactDOM from 'react-dom';
-import * as questions from './questions';
+import { questions } from './questions';
 import { isEmail, isURL } from 'validator';
-
+import Axios from 'axios';
 
 class Button extends Component {
     render() {
@@ -29,9 +29,9 @@ class Question extends Component {
     static getDerivedStateFromProps(props, state) {
         // component has re-rendered with a new question if true
         if (props.question.name !== state.name) {
-            // true for all questions beyond the first
-            if (state.name) props.onNextQuestion(state.name, state.response);
-            // enable the next button if there is a saved response available
+            // if there is a question and response store them in the parent Form
+            if (state.name && state.response) props.recordResponse(state.name, state.response);
+            // enable the next button if there is a saved response available (for when user clicks 'Previous' button)
             if (props.savedResponse) props.enableNext();
             return {
                 name: props.question.name,
@@ -42,10 +42,17 @@ class Question extends Component {
         return null;
     }
 
+    componentWillUnmount() {
+        // when the final 'Apply' screen is reached the component will unmount
+        // capture the final response / response if the component is unmounted for another reason
+        this.props.recordResponse(this.state.name, this.state.response)
+    }
+
     handleResponse({ target }) {
         const { type } = this.props.question;
 
         // validate inputs
+        // LITTLE SWITCHY BOI BACK FROM THE DEPTHS
         switch(type) {
             case 'email':
                 if (isEmail(target.value)) this.props.enableNext();
@@ -58,12 +65,15 @@ class Question extends Component {
                 if (target.value === '') this.props.disableNext();
                 else this.props.enableNext();
                 break;
+            default:
+                this.props.enableNext();
+                break;
         }
 
         this.setState(() => ({ response: target.value })); 
     }
 
-    textInput() {
+    createTextInput() {
         const {
             name,
             description,
@@ -87,7 +97,7 @@ class Question extends Component {
         );
     }
 
-    selectInput() {
+    createSelectInput() {
         const { name, description, options, required } = this.props.question;
         return (
             <div>
@@ -115,8 +125,8 @@ class Question extends Component {
             <div>
                 { 
                     this.props.question.type === 'select' 
-                       ? this.selectInput() 
-                       : this.textInput() 
+                       ? this.createSelectInput() 
+                       : this.createTextInput() 
                 }
             </div>
         )
@@ -179,26 +189,38 @@ class Form extends Component {
     }
 
     handleSubmit() {
-
+        Axios.post('http://127.0.0.1:3000/form/', { formData: this.state.responses }).then(console.log).catch(console.log);
     }
 
     render() {
         const question = this.props.questions[this.state.next];
+        // Final view + apply button (to post form)
+        if (!question) {
+            return (
+                <div>
+                    <p>After applying we will contact you with our decision at {this.state.responses['email']} within one week.</p>
+                    <Button action={this.handleSubmit} text='Apply' />
+                </div>
+            );         
+        }
+
         return (
             <div>
                 <Question
                     question = {question}
                     enableNext = {this.enableNext}
                     disableNext = {this.disableNext}
-                    onNextQuestion = {this.recordResponse}
+                    recordResponse = {this.recordResponse}
                     savedResponse = {this.state.responses[question.name] || null}
                 />
+
                 { 
                     // only renders 'Previous' button if there is a question to reach
-                    this.state.previous === null || this.state.next === 1
+                    this.state.previous === null || this.state.next === 0
                         ? null
                         : <Button action={this.handlePrevious} text='Previous' />
                 }
+
                 <Button action={this.handleNext} text='Next' disabled={this.state.nextDisabled} />
             </div>
         );

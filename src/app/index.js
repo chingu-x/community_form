@@ -194,9 +194,10 @@ class Form extends Component {
                     savedResponse = {this.state.responses[question.name] || null}
                 />
                 { 
-                    this.state.previous !== null
-                        ? <Button action={this.handlePrevious} text='Previous' />
-                        : null
+                    // only renders 'Previous' button if there is a question to reach
+                    this.state.previous === null || this.state.next === 1
+                        ? null
+                        : <Button action={this.handlePrevious} text='Previous' />
                 }
                 <Button action={this.handleNext} text='Next' disabled={this.state.nextDisabled} />
             </div>

@@ -9,7 +9,7 @@ module.exports = {
 
     // output directory and filename
     output: {
-        path: path.resolve('..', 'public', 'dist'),
+        path: path.resolve('..', 'public'),
         filename: 'index_bundle.js'
     },
 
@@ -31,5 +31,5 @@ module.exports = {
     ],
 
     // how to not get bundled code using webpack-dev-server (better error messages)?
-    mode: 'development'   
+    mode: 'production'   
 }

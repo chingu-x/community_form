@@ -18,31 +18,49 @@ class Button extends Component {
 class Question extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
-            userInput: ''
+            name: '',
+            response: ''
         }
 
-        this.onUserInput = this.onUserInput.bind(this);
+        this.handleResponse = this.handleResponse.bind(this);
     }
 
-    onUserInput({ target }) {
-        // reject empty strings or selections
-        if (target.value === '') return this.props.disableNext();
-
-        this.setState(() => {
+    static getDerivedStateFromProps(props, state) {
+        // component has re-rendered with a new question if true
+        if (props.question.name !== state.name) {
+            // true for all questions beyond the first
+            if (state.name) props.onNextQuestion(state.name, state.response);
+            // enable the next button if there is a saved response available
+            if (props.savedResponse) props.enableNext();
             return {
-                userInput: target.value
+                name: props.question.name,
+                response: props.savedResponse || ''
             }
-        });
+        }
+        // otherwise return no change
+        return null;
+    }
 
-        // validate custom input types here. disable 'next' button if validation fails
+    handleResponse({ target }) {
         const { type } = this.props.question;
-        if (type === 'email' && !isEmail(target.value)) return this.props.disableNext();
-        else if (type === 'url' && !isURL(target.value)) return this.props.disableNext();
 
-        // if validation succeeds enable the 'next' button
-        this.props.enableNext();
+        // validate inputs
+        switch(type) {
+            case 'email':
+                if (isEmail(target.value)) this.props.enableNext();
+                break;
+            case 'url':
+                if (isURL(target.value)) this.props.enableNext();
+                break;
+            case 'text':
+            case 'select':
+                if (target.value === '') this.props.disableNext();
+                else this.props.enableNext();
+                break;
+        }
+
+        this.setState(() => ({ response: target.value })); 
     }
 
     textInput() {
@@ -62,8 +80,8 @@ class Question extends Component {
                     name={name}
                     placeholder={placeholder}
                     required={required}
-                    value={this.state.userInput}
-                    onChange={this.onUserInput}
+                    value={this.state.response}
+                    onChange={this.handleResponse}
                 />
             </div>
         );
@@ -77,8 +95,8 @@ class Question extends Component {
                 <select
                     name={name}
                     required={required}
-                    value={this.state.userInput}
-                    onChange={this.onUserInput}
+                    value={this.state.response}
+                    onChange={this.handleResponse}
                 > 
                     <option value="">Select an option</option>
                 {
@@ -118,10 +136,11 @@ class Form extends Component {
 
         this.enableNext = this.enableNext.bind(this);
         this.disableNext = this.disableNext.bind(this);
+        this.handleNext = this.handleNext.bind(this);
+        this.recordResponse = this.recordResponse.bind(this);
 
-        this.onNext = this.onNext.bind(this);
-        this.onPrevious = this.onPrevious.bind(this);
-        this.onSubmit = this.onSubmit.bind(this);
+        this.handlePrevious = this.handlePrevious.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     enableNext() {
@@ -132,33 +151,54 @@ class Form extends Component {
         this.setState(() => ({ nextDisabled: true }))
     }
 
-    onNext() {
-        // incremenet the state 'next'
-        // previous = next++
+    handleNext() {
+        this.setState((currentState) => {
+            return {
+                previous: currentState.next,
+                next: currentState.next + 1
+            };
+        });
     }
 
-    onPrevious() {
-
+    handlePrevious() {
+        this.setState((currentState) => {
+            return {
+                previous: currentState.next,
+                next: currentState.next - 1
+            };
+        });
     }
 
-    onSubmit() {
+    recordResponse(question, response) {
+        this.setState((currentState) => {
+            currentState.responses[question] = response;
+            return currentState;
+        });
+
+        this.disableNext();
+    }
+
+    handleSubmit() {
 
     }
 
     render() {
+        const question = this.props.questions[this.state.next];
         return (
             <div>
                 <Question
-                    question={this.props.questions[this.state.next]}
-                    enableNext={this.enableNext}
-                    disableNext={this.disableNext}
+                    question = {question}
+                    enableNext = {this.enableNext}
+                    disableNext = {this.disableNext}
+                    onNextQuestion = {this.recordResponse}
+                    savedResponse = {this.state.responses[question.name] || null}
                 />
                 { 
-                    this.state.previous
-                        ? <Button action={this.onPrevious} text='Previous' />
+                    this.state.previous !== null
+                        ? <Button action={this.handlePrevious} text='Previous' />
                         : null
                 }
-                <Button action={this.onNext} text='Next' disabled={this.state.nextDisabled} />
+                <Button action={this.handleNext} text='Next' disabled={this.state.nextDisabled} />
             </div>
         );
     }
